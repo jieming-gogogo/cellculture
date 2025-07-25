@@ -1,453 +1,363 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PD细胞培养工艺开发参考工具箱</title>
-    <script src="https://cdn.tailwindcss.com  "></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js  "></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com  ">
-    <link rel="preconnect" href="https://fonts.gstatic.com  " crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300  ;400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: The application is designed as a single-page interactive dashboard. A fixed sidebar navigation allows users to jump to different component categories. This version adds a crucial new section, "Quality Attribute Control Strategies," based on user request and provided documentation. This section directly links fundamental knowledge (components) to practical application (process control for CQAs), making the tool more valuable for process development scientists. The structure maintains a non-linear, user-driven exploration flow, transforming static reports into an engaging learning tool. -->
-    <!-- Visualization & Content Choices: Report Info: Upstream control strategies for CQAs (Aggregates, Fragments, etc.) -> Goal: Explain & Guide -> Viz/Method: A new section with dedicated card-based layouts for each CQA. Each card details a specific strategy (Lever, Action, Mechanism). -> Interaction: Static, clearly organized text for easy reference. -> Justification: Directly addresses the user's need for a practical reference guide. The card format breaks down complex strategies into digestible pieces. A summary card on "Antagonistic Relationships" is included to highlight the complexity of process optimization, a key insight from the source document. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <style>
-        body { font-family: 'Noto Sans SC', sans-serif; background-color: #fdfbf7; scroll-behavior: smooth; }
-        .content-card { background-color: #fff; border: 1px solid #f0eade; transition: all 0.3s ease; }
-        .content-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
-        .nav-link { transition: all 0.2s ease; border-left: 3px solid transparent; }
-        .nav-link.active { color: #c8a2c8; border-left-color: #c8a2c8; background-color: #f5f1f5; font-weight: 500; }
-        .nav-link:hover { color: #c8a2c8; background-color: #f8f6f8; border-left-color: #c8a2c8; }
-        .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
-        .modal-content { background-color: #fdfbf7; }
-        .pathway-box { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem; text-align: center; font-weight: 500; }
-        .pathway-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #9ca3af; margin: 0.25rem 0; }
-        .pathway-label { font-size: 0.75rem; color: #475569; padding: 0.25rem 0.5rem; border-radius: 9999px; }
-        .strategy-card { border-left-width: 4px; }
-        .strategy-title { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.75rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+  <title>PD细胞培养工艺开发参考工具箱</title>
+
+  <!-- 修复空格后的 CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    html,body{height:100%;overflow-x:hidden;font-family:'Noto Sans SC',sans-serif;background:#fdfbf7;scroll-behavior:smooth}
+    .content-card{background:#fff;border:1px solid #f0eade;border-radius:.75rem;transition:.3s}
+    .content-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04)}
+    .nav-link{transition:.2s;border-left:3px solid transparent}
+    .nav-link.active{color:#c8a2c8;border-left-color:#c8a2c8;background:#f5f1f5;font-weight:500}
+    .nav-link:hover{color:#c8a2c8;background:#f8f6f8;border-left-color:#c8a2c8}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5)}
+    .modal-content{background:#fdfbf7;border-radius:1rem;max-height:80vh;overflow-y:auto}
+    .strategy-card{border-left:4px solid}
+  </style>
 </head>
+
 <body class="text-slate-800">
+  <div class="flex">
+    <!-- 侧边栏 -->
+    <aside class="fixed top-0 left-0 h-screen w-64 bg-white shadow-lg p-4 overflow-y-auto hidden md:block">
+      <h1 class="text-xl font-bold mb-6 border-b pb-4">PD细胞培养工具箱</h1>
+      <nav id="sidebar-nav" class="flex flex-col space-y-2">
+        <a href="#introduction"  class="nav-link px-4 py-2 rounded-r-md">引言</a>
+        <a href="#energy"        class="nav-link px-4 py-2 rounded-r-md">能量与碳源</a>
+        <a href="#amino-acids"   class="nav-link px-4 py-2 rounded-r-md">氨基酸</a>
+        <a href="#vitamins"      class="nav-link px-4 py-2 rounded-r-md">维生素</a>
+        <a href="#minerals"      class="nav-link px-4 py-2 rounded-r-md">无机盐与微量元素</a>
+        <a href="#supplements"   class="nav-link px-4 py-2 rounded-r-md">补充组分</a>
+        <a href="#influencers"   class="nav-link px-4 py-2 rounded-r-md">关键影响因素</a>
+        <a href="#strategies"    class="nav-link px-4 py-2 rounded-r-md">质量属性调控策略</a>
+        <a href="#conclusion"    class="nav-link px-4 py-2 rounded-r-md">结论与展望</a>
+      </nav>
+    </aside>
 
-    <div id="app-container" class="flex">
-        <!-- Sidebar Navigation -->
-        <aside class="fixed top-0 left-0 h-screen w-64 bg-white shadow-lg p-4 overflow-y-auto hidden md:block">
-            <h1 class="text-xl font-bold text-slate-900 mb-6 border-b pb-4">CHO培养基浏览器</h1>
-            <nav id="sidebar-nav" class="flex flex-col space-y-2">
-                <a href="#introduction" class="nav-link px-4 py-2 rounded-r-md">引言</a>
-                <a href="#energy" class="nav-link px-4 py-2 rounded-r-md">能量与碳源</a>
-                <a href="#amino-acids" class="nav-link px-4 py-2 rounded-r-md">氨基酸</a>
-                <a href="#vitamins" class="nav-link px-4 py-2 rounded-r-md">维生素</a>
-                <a href="#minerals" class="nav-link px-4 py-2 rounded-r-md">无机盐与微量元素</a>
-                <a href="#supplements" class="nav-link px-4 py-2 rounded-r-md">补充组分</a>
-                <a href="#influencers" class="nav-link px-4 py-2 rounded-r-md">关键影响因素</a>
-                <a href="#strategies" class="nav-link px-4 py-2 rounded-r-md">质量属性调控策略</a>
-                <a href="#conclusion" class="nav-link px-4 py-2 rounded-r-md">结论与展望</a>
-            </nav>
-        </aside>
+    <!-- 主内容 -->
+    <main class="w-full md:ml-64 p-4 md:p-8 space-y-16">
+      <div class="md:hidden mb-6">
+        <h1 class="text-2xl font-bold text-center">PD细胞培养工具箱</h1>
+      </div>
 
-        <!-- Main Content -->
-        <main class="w-full md:ml-64 p-4 md:p-8 lg:p-12">
-            
-            <div class="md:hidden mb-6">
-                 <h1 class="text-2xl font-bold text-center text-slate-900">CHO培养基浏览器</h1>
+      <!-- 引言 -->
+      <section id="introduction">
+        <h2 class="text-3xl font-bold mb-4">欢迎来到PD细胞培养工艺开发参考工具箱</h2>
+        <p class="text-lg text-slate-600 mb-6">
+          本工具箱将复杂的CHO细胞培养工艺开发转化为一个直观、易探索的交互式页面。CHO细胞是生物制药领域生产抗体和重组蛋白的核心工具，而培养基的精确配方是决定细胞生长、蛋白产量和最终产品质量的基石。请通过左侧导航或滚动页面深入了解。
+        </p>
+      </section>
+
+      <!-- 能量与碳源 -->
+      <section id="energy">
+        <h2 class="text-3xl font-bold mb-2">能量与碳源</h2>
+        <p class="text-slate-600 mb-8">此部分探讨为细胞提供动力的核心代谢物。它们是细胞生长和蛋白质合成的燃料，但其代谢过程也会产生需要严格控制的副产物。</p>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="content-card p-6">
+            <h3 class="text-2xl font-semibold mb-4">葡萄糖 (Glucose)</h3>
+            <p class="mb-4">最主要的碳源和能量来源。其代谢效率直接影响细胞生长和蛋白生产。</p>
+            <div class="border-t pt-4">
+              <h4 class="font-semibold mb-2">关键问题：乳酸积累 (瓦博格效应)</h4>
+              <p class="text-sm text-slate-600">即使在氧气充足时，CHO细胞也倾向于快速糖酵解产生乳酸，导致培养基酸化和渗透压升高，抑制细胞生长。</p>
             </div>
-
-            <div id="content-sections" class="space-y-16">
-                <section id="introduction">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-4">欢迎来到PD细胞培养工艺开发参考工具箱</h2>
-                    <p class="text-lg text-slate-600 mb-6">本应用旨在将复杂的CHO细胞培养工艺开发转化为一个直观、易于探索的交互式工具箱。CHO细胞是生物制药领域生产抗体和重组蛋白的核心工具，而培养基的精确配方是决定细胞生长、蛋白产量和最终产品质量的基石。您可以通过左侧导航栏或滚动页面，深入了解培养基中各大类组分的具体功能和作用机理。</p>
-                </section>
-
-                <section id="energy">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">能量与碳源</h2>
-                    <p class="text-slate-600 mb-8">此部分探讨为细胞提供动力的核心代谢物。它们是细胞生长和蛋白质合成的燃料，但其代谢过程也会产生需要严格控制的副产物。</p>
-                    <div class="grid md:grid-cols-2 gap-8 mb-12">
-                        <div class="content-card rounded-xl p-6">
-                            <h3 class="text-2xl font-semibold mb-4">葡萄糖 (Glucose)</h3>
-                            <p class="mb-4">最主要的碳源和能量来源。其代谢效率直接影响细胞生长和蛋白生产。</p>
-                            <div class="border-t pt-4">
-                                <h4 class="font-semibold mb-2">关键问题：乳酸积累 (瓦博格效应)</h4>
-                                <p class="text-sm text-slate-600">即使在氧气充足时，CHO细胞也倾向于快速糖酵解产生乳酸，导致培养基酸化和渗透压升高，抑制细胞生长。</p>
-                            </div>
-                        </div>
-                        <div class="content-card rounded-xl p-6">
-                            <h3 class="text-2xl font-semibold mb-4">谷氨酰胺 (Glutamine)</h3>
-                            <p class="mb-4">主要的氮源和次级能量来源，但其分解是培养过程中有毒物质氨的主要来源。</p>
-                             <div class="border-t pt-4">
-                                <h4 class="font-semibold mb-2">关键问题：氨毒性</h4>
-                                <p class="text-sm text-slate-600">谷氨酰胺分解代谢产生氨，高浓度氨会抑制细胞生长、诱导凋亡，并损害蛋白质糖基化质量。</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="amino-acids">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">氨基酸</h2>
-                    <p class="text-slate-600 mb-8">氨基酸不仅是合成蛋白质的结构单元，更是细胞代谢网络中的关键调控者。它们的平衡供应对细胞生长、蛋白产量和产品质量至关重要。点击下方的卡片以查看每种氨基酸的详细信息。</p>
-                    <div id="amino-acid-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    </div>
-                </section>
-
-                <section id="vitamins">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">维生素</h2>
-                    <p class="text-slate-600 mb-8">维生素是细胞无法合成的必需有机微量营养素，它们作为辅酶的前体，是驱动能量代谢和生物合成途径的“引擎”。</p>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-                    <div class="content-card rounded-xl p-6 mt-8 border-orange-200 bg-orange-50">
-                        <h3 class="text-xl font-semibold text-orange-800 mb-4">下游工艺挑战：抗体颜色问题</h3>
-                        <p class="mb-4 text-orange-700">在纯化浓缩后，有时会发现抗体溶液带有不希望的颜色，这通常是由培养基中的某些小分子与抗体发生非特异性弱结合导致的。</p>
-                        <div class="space-y-3">
-                            <p><strong class="text-pink-600">粉色/红色:</strong> 主要由 <strong class="text-pink-600">维生素B12 (钴胺素)</strong> 引起。其分子本身呈粉红色，易吸附于蛋白表面，在浓缩后显色。</p>
-                            <p><strong class="text-green-600">浅绿/黄色:</strong> 主要由 <strong class="text-green-600">维生素B2 (核黄素)</strong> 引起。它是一种强荧光分子，呈现黄绿色，即使在低浓度下也容易导致产品带色。</p>
-                        </div>
-                        <p class="text-sm mt-4 text-orange-600">这个问题需要在下游纯化工艺中，通过优化层析条件来去除这些有色小分子杂质。</p>
-                    </div>
-                </section>
-
-                <section id="minerals">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">无机盐与微量元素</h2>
-                    <p class="text-slate-600 mb-8">无机盐维持着培养环境的渗透压和pH稳定，而微量元素则是关键酶催化中心不可或缺的组成部分，直接影响代谢效率和产品质量。</p>
-                    <div id="minerals-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-                </section>
-                
-                <section id="supplements">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">补充组分</h2>
-                    <p class="text-slate-600 mb-8">在化学成分确定的培养基中，需要额外添加一些特殊功能的组分，以替代血清的功能或保护细胞免受物理损伤。</p>
-                    <div class="grid md:grid-cols-2 gap-8">
-                    </div>
-                </section>
-                
-                <section id="influencers">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">关键生长与表达影响因素</h2>
-                    <p class="text-slate-600 mb-8">虽然培养基中所有组分都重要，但以下几类物质对细胞生长、蛋白表达和最终产品质量的影响尤为关键和直接，是工艺优化的核心焦点。</p>
-                    <div id="influencers-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-                </section>
-                
-                <section id="strategies">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">质量属性(CQA)调控策略</h2>
-                    <p class="text-slate-600 mb-8">基于对组分作用机理的理解，我们可以采用特定的上游工艺策略，主动调控关键质量属性(CQAs)。以下是针对常见产品异质性的一些常规调节方法。</p>
-                    
-                    <div class="space-y-12">
-                        <div>
-                            <h3 class="strategy-title text-blue-800">降低聚集体 (Aggregates)</h3>
-                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-blue-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：温度</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 生产期降温 (如31°C)。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 稳定蛋白质天然构象，减少易于聚集的去折叠中间体。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-blue-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：渗透压</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 维持较高水平 (> 420 mOsm/kg)。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 稳定蛋白质水合层和三维结构。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-blue-500">
-                                    <h4 class="font-semibold mb-2">培养基添加：精氨酸</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 补加适量精氨酸。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 作为化学分子伴侣，增加蛋白质溶解度。</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 class="strategy-title text-red-800">降低片段 (Fragments)</h3>
-                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-red-500">
-                                    <h4 class="font-semibold mb-2">核心策略：细胞活率</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 优化补料，维持高活率。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 减少细胞裂解，从而降低宿主细胞蛋白酶(HCPs)的释放。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-red-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：pH</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 维持在生理范围 (6.8-7.2)。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 限制酸性蛋白酶（如组织蛋白酶）的活性。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-red-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：收获时机</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 优化培养时长。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 在产量和产品降解之间取得最佳平衡点。</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h3 class="strategy-title text-orange-800">降低酸性变体 (Acidic Variants)</h3>
-                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                 <div class="content-card rounded-lg p-6 strategy-card border-l-orange-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：pH</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 维持在生理范围较低端 (6.8-7.0)。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 减缓在中性/碱性条件下加速的天冬酰胺脱酰胺反应。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-orange-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：温度</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 生产期降温。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 脱酰胺化是化学反应，低温可降低其反应速率。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-orange-500">
-                                    <h4 class="font-semibold mb-2">培养基添加：锌离子</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 补充适量 $Zn^{2+}$。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 调节细胞代谢，减少导致酸性峰的化学修饰。</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 class="strategy-title text-purple-800">降低碱性变体 (Basic Variants)</h3>
-                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                 <div class="content-card rounded-lg p-6 strategy-card border-l-purple-500">
-                                    <h4 class="font-semibold mb-2">培养基添加：氨基酸</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 降低补料中精氨酸/赖氨酸浓度。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 减轻对负责C端赖氨酸剪切的羧肽酶的产物抑制效应。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-purple-500">
-                                    <h4 class="font-semibold mb-2">培养基添加：锌离子</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 补充适量 $Zn^{2+}$。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 锌是羧肽酶的必需辅因子，增强其活性可促进剪切。</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 class="strategy-title text-green-800">降低高甘露糖 (Man5)</h3>
-                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-green-500">
-                                    <h4 class="font-semibold mb-2">工艺参数：pH</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 维持在生理范围较高端 (如7.2)。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 优化高尔基体中糖基化相关酶的活性环境。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-green-500">
-                                    <h4 class="font-semibold mb-2">培养基添加：糖类前体</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 补充半乳糖、尿苷或GlcNAc。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 直接为糖链成熟过程提供底物或前体。</p>
-                                </div>
-                                <div class="content-card rounded-lg p-6 strategy-card border-l-green-500">
-                                    <h4 class="font-semibold mb-2">培养基添加：锰离子</h4>
-                                    <p class="text-sm text-slate-600"><strong class="text-slate-800">措施:</strong> 补充适量 $Mn^{2+}$。</p>
-                                    <p class="text-sm text-slate-600 mt-1"><strong class="text-slate-800">机理:</strong> 作为糖基转移酶的关键辅因子，驱动糖链加工。</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="content-card rounded-xl p-6 mt-8 border-yellow-300 bg-yellow-50">
-                            <h3 class="text-xl font-semibold text-yellow-900 mb-4">重要考量：策略的相互拮抗</h3>
-                            <p class="text-yellow-800">工艺优化并非简单的加法，不同CQAs的控制策略间常存在冲突。例如：</p>
-                            <ul class="list-disc list-inside space-y-2 mt-4 text-yellow-800">
-                                <li><strong class="text-blue-600">高浓度精氨酸</strong>能有效<strong class="text-blue-600">抑制聚集</strong>，但同时会抑制羧肽酶活性，导致<strong class="text-purple-600">碱性峰增加</strong>。</li>
-                                <li><strong class="text-blue-600">低温培养</strong>能<strong class="text-blue-600">降低聚集</strong>、<strong class="text-red-600">片段</strong>和<strong class="text-orange-600">酸性峰</strong>，但可能减缓酶促反应，导致<strong class="text-green-600">糖基化不完全</strong>（如半乳糖基化水平降低）。</li>
-                            </ul>
-                            <p class="text-sm mt-4 text-yellow-700">这要求必须采用系统性的优化方法（如实验设计，DoE），寻找一个能平衡所有相互竞争效应的工艺窗口，确保所有CQAs都达标。</p>
-                        </div>
-
-                    </div>
-                </section>
-
-                <section id="conclusion">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">结论与未来展望</h2>
-                    <p class="text-slate-600 mb-8">CHO细胞培养基是一个由多种成分协同作用的复杂体系。成功的工艺开发必须基于对这些组分相互作用的深刻理解。未来，培养基的开发将朝着更精确、更智能化的方向发展。</p>
-                    <div class="grid md:grid-cols-2 gap-6">
-                    </div>
-                </section>
+          </div>
+          <div class="content-card p-6">
+            <h3 class="text-2xl font-semibold mb-4">谷氨酰胺 (Glutamine)</h3>
+            <p class="mb-4">主要的氮源和次级能量来源，但其分解是培养过程中有毒物质氨的主要来源。</p>
+            <div class="border-t pt-4">
+              <h4 class="font-semibold mb-2">关键问题：氨毒性</h4>
+              <p class="text-sm text-slate-600">谷氨酰胺分解代谢产生氨，高浓度氨会抑制细胞生长、诱导凋亡，并损害蛋白质糖基化质量。</p>
             </div>
-        </main>
-    </div>
-
-    <div id="modal" class="fixed inset-0 z-50 items-center justify-center hidden">
-        <div class="modal-backdrop fixed inset-0"></div>
-        <div class="modal-content relative w-11/12 md:max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl p-8 overflow-y-auto">
-            <button id="close-modal" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg  "><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <div id="modal-body"></div>
+          </div>
         </div>
+      </section>
+
+      <!-- 氨基酸 -->
+      <section id="amino-acids">
+        <h2 class="text-3xl font-bold mb-2">氨基酸</h2>
+        <p class="text-slate-600 mb-8">氨基酸不仅是合成蛋白质的结构单元，更是细胞代谢网络中的关键调控者。点击卡片查看详情。</p>
+        <div id="amino-acid-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+      </section>
+
+      <!-- 维生素 -->
+      <section id="vitamins">
+        <h2 class="text-3xl font-bold mb-2">维生素</h2>
+        <p class="text-slate-600 mb-8">维生素是细胞无法合成的必需有机微量营养素，作为辅酶的前体，驱动能量代谢和生物合成途径。</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="vitamins-grid"></div>
+      </section>
+
+      <!-- 无机盐与微量元素 -->
+      <section id="minerals">
+        <h2 class="text-3xl font-bold mb-2">无机盐与微量元素</h2>
+        <p class="text-slate-600 mb-8">无机盐维持渗透压和pH，微量元素是酶催化中心不可或缺的部分。</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="minerals-grid"></div>
+      </section>
+
+      <!-- 补充组分 -->
+      <section id="supplements">
+        <h2 class="text-3xl font-bold mb-2">补充组分</h2>
+        <p class="text-slate-600 mb-8">在化学成分确定的培养基中，需要额外添加特殊功能组分以替代血清功能或保护细胞。</p>
+        <div class="grid md:grid-cols-2 gap-8" id="supplements-grid"></div>
+      </section>
+
+      <!-- 关键影响因素 -->
+      <section id="influencers">
+        <h2 class="text-3xl font-bold mb-2">关键生长与表达影响因素</h2>
+        <p class="text-slate-600 mb-8">以下物质对细胞生长、蛋白表达和最终产品质量尤为关键。</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="influencers-grid"></div>
+      </section>
+
+      <!-- 质量属性调控策略 -->
+      <section id="strategies">
+        <h2 class="text-3xl font-bold mb-2">质量属性(CQA)调控策略</h2>
+        <p class="text-slate-600 mb-8">基于组分作用机理，采用上游工艺策略主动调控关键质量属性。</p>
+
+        <!-- 聚集体 -->
+        <h3 class="text-xl font-semibold text-blue-800 mb-4">降低聚集体 (Aggregates)</h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="content-card p-4 border-l-blue-500"><h4 class="font-semibold mb-1">温度</h4><p class="text-sm">生产期降温至31°C，稳定蛋白构象。</p></div>
+          <div class="content-card p-4 border-l-blue-500"><h4 class="font-semibold mb-1">渗透压</h4><p class="text-sm">维持>420 mOsm/kg，稳定水合层。</p></div>
+          <div class="content-card p-4 border-l-blue-500"><h4 class="font-semibold mb-1">精氨酸</h4><p class="text-sm">补充精氨酸作化学伴侣增溶。</p></div>
+        </div>
+
+        <!-- 片段 -->
+        <h3 class="text-xl font-semibold text-red-800 mb-4">降低片段 (Fragments)</h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="content-card p-4 border-l-red-500"><h4 class="font-semibold mb-1">细胞活率</h4><p class="text-sm">优化补料维持高活率，减少HCP释放。</p></div>
+          <div class="content-card p-4 border-l-red-500"><h4 class="font-semibold mb-1">pH</h4><p class="text-sm">维持6.8-7.2，抑制酸性蛋白酶。</p></div>
+          <div class="content-card p-4 border-l-red-500"><h4 class="font-semibold mb-1">收获时机</h4><p class="text-sm">平衡产量与降解的最佳培养时长。</p></div>
+        </div>
+
+        <!-- 酸性变体 -->
+        <h3 class="text-xl font-semibold text-orange-800 mb-4">降低酸性变体 (Acidic Variants)</h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="content-card p-4 border-l-orange-500"><h4 class="font-semibold mb-1">pH</h4><p class="text-sm">维持6.8-7.0，减缓脱酰胺反应。</p></div>
+          <div class="content-card p-4 border-l-orange-500"><h4 class="font-semibold mb-1">温度</h4><p class="text-sm">低温降低化学反应速率。</p></div>
+          <div class="content-card p-4 border-l-orange-500"><h4 class="font-semibold mb-1">Zn²⁺</h4><p class="text-sm">补锌调节代谢，减少酸性修饰。</p></div>
+        </div>
+
+        <!-- 碱性变体 -->
+        <h3 class="text-xl font-semibold text-purple-800 mb-4">降低碱性变体 (Basic Variants)</h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="content-card p-4 border-l-purple-500"><h4 class="font-semibold mb-1">精/赖氨酸</h4><p class="text-sm">降低补料浓度，减轻产物抑制。</p></div>
+          <div class="content-card p-4 border-l-purple-500"><h4 class="font-semibold mb-1">Zn²⁺</h4><p class="text-sm">补锌激活羧肽酶促剪切。</p></div>
+        </div>
+
+        <!-- 高甘露糖 -->
+        <h3 class="text-xl font-semibold text-green-800 mb-4">降低高甘露糖 (Man5)</h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="content-card p-4 border-l-green-500"><h4 class="font-semibold mb-1">pH</h4><p class="text-sm">维持7.2左右优化糖基化酶活性。</p></div>
+          <div class="content-card p-4 border-l-green-500"><h4 class="font-semibold mb-1">糖前体</h4><p class="text-sm">补充半乳糖、尿苷、GlcNAc作底物。</p></div>
+          <div class="content-card p-4 border-l-green-500"><h4 class="font-semibold mb-1">Mn²⁺</h4><p class="text-sm">补锰作糖基转移酶辅因子。</p></div>
+        </div>
+
+        <!-- 策略拮抗提示 -->
+        <div class="content-card p-6 bg-yellow-50 border-l-yellow-400">
+          <h3 class="font-semibold text-yellow-900 mb-2">重要考量：策略的相互拮抗</h3>
+          <ul class="list-disc list-inside text-sm text-yellow-800 space-y-1">
+            <li>高浓度精氨酸抑制聚集，但会抑制羧肽酶→碱性峰↑</li>
+            <li>低温减聚集/片段/酸性峰，但可能糖基化不完整</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 结论 -->
+      <section id="conclusion">
+        <h2 class="text-3xl font-bold mb-2">结论与未来展望</h2>
+        <p class="text-slate-600 mb-6">
+          CHO培养基是一个多组分协同的复杂体系。未来将利用系统生物学与在线监测实现模型驱动的动态精准控制。
+        </p>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="content-card p-4 bg-purple-50"><h3 class="font-semibold text-purple-800">系统生物学与模型驱动设计</h3><p class="text-sm text-purple-700">利用组学+数学模型实现理性设计。</p></div>
+          <div class="content-card p-4 bg-green-50"><h3 class="font-semibold text-green-800">动态实时控制</h3><p class="text-sm text-green-700">在线监测+拉曼光谱动态调整补料。</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 弹窗 -->
+  <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="modal-backdrop fixed inset-0 bg-black/50"></div>
+    <div class="modal-content relative w-11/12 md:max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl p-6 overflow-y-auto bg-white">
+      <button id="close-modal" class="absolute top-3 right-3 text-slate-500 hover:text-slate-800">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <div id="modal-body"></div>
     </div>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dataStore = {
-                aminoAcids: {
-                    'Ala': { name: '丙氨酸', classification: '非极性, NEAA', role: '与丙酮酸互换，参与氮代谢', impact: '常作为代谢副产物被分泌' },
-                    'Arg': { name: '精氨酸', classification: '碱性, 条件EAA', role: '尿素循环；NO合成前体；多胺与脯氨酸前体', impact: '与IgG产量相关；NO信号调控' },
-                    'Asn': { name: '天冬酰胺', classification: '极性, NEAA', role: 'N-连接糖基化位点；氮源', impact: '关键质量属性（CQA）；耗尽可致生长停滞' },
-                    'Asp': { name: '天冬氨酸', classification: '酸性, NEAA', role: 'TCA循环补给（与草酰乙酸互换）；苹果酸-天冬氨酸穿梭', impact: '连接糖酵解与线粒体呼吸' },
-                    'Cys': { name: '半胱氨酸', classification: '极性, NEAA', role: '谷胱甘肽（GSH）合成的限速前体；形成二硫键', impact: '抗氧化防御核心；蛋白质折叠与稳定' },
-                    'Glu': { name: '谷氨酸', classification: '酸性, NEAA', role: '氨基酸代谢中心；TCA循环补给（α-KG）；GABA前体', impact: '氮代谢枢纽；替代Gln可减少氨产生' },
-                    'Gln': { name: '谷氨酰胺', classification: '极性, NEAA', role: '主要氮源；主要能量来源（谷氨酰胺分解）', impact: '主要的氨来源，高浓度有毒性' },
-                    'Gly': { name: '甘氨酸', classification: '非极性, NEAA', role: '与丝氨酸互换；一碳单位来源（GCS）；GSH组分', impact: '参与核酸合成与抗氧化' },
-                    'His': { name: '组氨酸', classification: '碱性, EAA', role: '生理pH缓冲剂；组胺前体', impact: '维持培养基pH稳定；常用于制剂缓冲液' },
-                    'Ile': { name: '异亮氨酸', classification: '非极性, EAA', role: 'BCAA；能量来源（TCA循环）；mTOR信号', impact: '重要的能量来源；与细胞生长和生产力相关' },
-                    'Leu': { name: '亮氨酸', classification: '非极性, EAA', role: 'BCAA；能量来源（TCA循环）；mTOR信号通路强激活剂', impact: '强力促进蛋白合成；与IgG产量高度相关' },
-                    'Lys': { name: '赖氨酸', classification: '碱性, EAA', role: '抗体C端赖氨酸异质性来源', impact: 'CQA；被CpD酶切除导致产品不均一' },
-                    'Met': { name: '甲硫氨酸', classification: '非极性, EAA', role: 'SAM循环前体（甲基供体）；半胱氨酸合成前体', impact: '表观遗传调控；抗氧化；连接一碳代谢' },
-                    'Phe': { name: '苯丙氨酸', classification: '非极性, EAA', role: '酪氨酸合成前体', impact: '芳香族氨基酸代谢起点' },
-                    'Pro': { name: '脯氨酸', classification: '非极性, NEAA', role: '化学伴侣；胶原蛋白主要成分', impact: '抗细胞应激；防止蛋白质聚集' },
-                    'Ser': { name: '丝氨酸', classification: '极性, NEAA', role: '一碳单位主要来源（SHMT）；O-连接糖基化位点', impact: '核酸合成核心；与甘氨酸、半胱氨酸代谢紧密相连' },
-                    'Thr': { name: '苏氨酸', classification: '极性, EAA', role: 'O-连接糖基化位点', impact: 'CQA；影响蛋白质功能与稳定性' },
-                    'Trp': { name: '色氨酸', classification: '非极性, EAA', role: 'NAD+从头合成前体；血清素前体', impact: '影响细胞氧化还原状态' },
-                    'Tyr': { name: '酪氨酸', classification: '极性, NEAA', role: '信号转导（磷酸化位点）；儿茶酚胺前体', impact: '由苯丙氨酸合成；参与细胞信号调控' },
-                    'Val': { name: '缬氨酸', classification: '非极性, EAA', role: 'BCAA；能量来源（TCA循环）；mTOR信号', impact: '重要的能量来源；与细胞生长和生产力相关' }
-                },
-                vitamins: [
-                    { name: '硫胺素 (B1)', form: 'TPP', role: '碳水化合物代谢中的脱羧反应（连接糖酵解与TCA循环）' },
-                    { name: '核黄素 (B2)', form: 'FMN, FAD', role: '氧化还原反应的电子载体（TCA循环, 脂肪酸氧化）' },
-                    { name: '烟酸 (B3)', form: 'NAD+, NADP+', role: '主要的氧化还原电子载体' },
-                    { name: '泛酸 (B5)', form: '辅酶A (CoA)', role: '乙酰基和其他酰基的载体（TCA循环, 脂肪酸代谢）' },
-                    { name: '吡哆醇 (B6)', form: 'PLP', role: '氨基酸代谢；一碳代谢' },
-                    { name: '生物素 (B7)', form: '生物素', role: '羧化反应（TCA循环补给, 脂肪酸合成）' },
-                    { name: '叶酸 (B9)', form: 'THF', role: '一碳单位的载体（核酸合成）' },
-                    { name: '钴胺素 (B12)', form: '甲钴胺', role: '甲硫氨酸再生（连接叶酸与甲硫氨酸循环）' },
-                    { name: '维生素C', form: '抗坏血酸', role: '强大的抗氧化剂；胶原蛋白合成中的辅因子' },
-                ],
-                minerals: [
-                    { name: '铁 (Fe)', role: '电子传递链, 氧气运输, DNA合成', impact: '缺乏会抑制细胞生长和呼吸；过量会产生氧化应激。' },
-                    { name: '锌 (Zn)', role: '基因转录调控 (锌指蛋白), 代谢, DNA/RNA合成', impact: '影响基因表达和细胞增殖。' },
-                    { name: '铜 (Cu)', role: '线粒体呼吸 (能量产生), 抗氧化', impact: '缺乏导致乳酸积累和能量代谢效率低下。' },
-                    { name: '硒 (Se)', role: '抗氧化防御 (谷胱甘肽过氧化物酶), 构成硒蛋白', impact: '缺乏会削弱细胞抵抗氧化应激的能力。' },
-                    { name: '锰 (Mn)', role: '蛋白质糖基化 (糖基转移酶), 抗氧化', impact: '缺乏会直接影响糖基化质量，导致糖型不完整。' },
-                    { name: '无机盐 (Na, K, Ca, Mg, P)', role: '维持渗透压、膜电位和pH平衡，并作为多种酶的辅助因子。', impact: '维持细胞基础生理功能的稳定。' }
-                ],
-                supplements: [
-                    { title: '生长因子 (如胰岛素)', content: '在无血清培养基中最重要的促生长和促存活因子，通过激活PI3K/Akt（存活）和Ras/MAPK（增殖）信号通路来发挥作用。', mechanism: '<p class="text-sm font-semibold">信号通路:</p><p class="font-mono text-xs bg-amber-50 p-2 rounded">胰岛素 ➔ 受体 ➔ PI3K/Akt ➔ <span class="text-green-600">抑制细胞凋亡</span></p><p class="font-mono text-xs bg-amber-50 p-2 rounded mt-1">胰岛素 ➔ 受体 ➔ Ras/MAPK ➔ <span class="text-green-600">促进细胞增殖</span></p>' },
-                    { title: '剪切保护剂 (Pluronic® F-68)', content: '一种非离子表面活性剂，在悬浮培养中保护细胞免受搅拌和通气产生的流体剪切力损伤。', mechanism: '<h4 class="font-semibold mb-2">作用机制:</h4><p class="text-sm text-slate-600">通过嵌入细胞膜，从物理上“增强”细胞膜的韧性，并减少细胞与气泡的有害接触。</p>' }
-                ],
-                influencers: [
-                    { title: '能量与代谢废物', points: ['<strong class="text-green-700">葡萄糖:</strong> 能量核心，但过量导致<strong class="text-red-600">乳酸</strong>积累，抑制生长。', '<strong class="text-purple-700">谷氨酰胺:</strong> 氮源和能源，但分解产生有毒的<strong class="text-red-600">氨</strong>，影响质量。'], summary: '核心矛盾：如何在满足能量需求的同时，控制有毒副产物的产生。'},
-                    { title: '蛋白质合成引擎', points: ['<strong class="text-blue-700">亮氨酸:</strong> 关键的mTOR信号激活剂，直接驱动蛋白质合成。', '<strong class="text-blue-700">氨基酸平衡:</strong> 充足供应所有氨基酸，减轻细胞合成负担，将更多资源用于目标蛋白生产。'], summary: '核心目标：为蛋白质工厂提供充足、平衡的“砖块”和“启动信号”。'},
-                    { title: '产品质量调控', points: ['<strong class="text-teal-700">天冬酰胺:</strong> N-连接糖基化的位点，其耗尽是严重质量问题。', '<strong class="text-teal-700">锰 (Mn):</strong> 糖基转移酶的关键辅因子，直接决定糖链的完整性。', '<strong class="text-teal-700">赖氨酸:</strong> 其C端异质性是抗体药物一个经典的质量属性挑战。'], summary: '核心挑战：通过培养基组分精确调控翻译后修饰，满足预设的质量标准。'}
-                ],
-                 conclusions: [
-                    { title: '系统生物学与模型驱动设计', content: '利用组学技术和数学模型，实现培养基的从头理性设计，而非传统的“试错法”。', color: 'purple' },
-                    { title: '动态实时控制', content: '利用在线监测技术（如拉曼光谱），根据细胞的实时代谢状态动态调整补料策略。', color: 'green' }
-                ]
-            };
+  <!-- 脚本 -->
+  <script>
+    /* ===== 数据 ===== */
+    const dataStore = {
+      aminoAcids: {
+        Ala: { name: '丙氨酸', classification: '非极性, NEAA', role: '与丙酮酸互换，参与氮代谢', impact: '常作为代谢副产物被分泌' },
+        Arg: { name: '精氨酸', classification: '碱性, 条件EAA', role: '尿素循环；NO合成前体；多胺与脯氨酸前体', impact: '与IgG产量相关；NO信号调控' },
+        Asn: { name: '天冬酰胺', classification: '极性, NEAA', role: 'N-连接糖基化位点；氮源', impact: '关键质量属性（CQA）；耗尽可致生长停滞' },
+        Asp: { name: '天冬氨酸', classification: '酸性, NEAA', role: 'TCA循环补给；苹果酸-天冬氨酸穿梭', impact: '连接糖酵解与线粒体呼吸' },
+        Cys: { name: '半胱氨酸', classification: '极性, NEAA', role: '谷胱甘肽（GSH）合成的限速前体；形成二硫键', impact: '抗氧化防御核心；蛋白质折叠与稳定' },
+        Glu: { name: '谷氨酸', classification: '酸性, NEAA', role: '氨基酸代谢中心；TCA循环补给（α-KG）；GABA前体', impact: '氮代谢枢纽；替代Gln可减少氨产生' },
+        Gln: { name: '谷氨酰胺', classification: '极性, NEAA', role: '主要氮源；主要能量来源（谷氨酰胺分解）', impact: '主要的氨来源，高浓度有毒性' },
+        Gly: { name: '甘氨酸', classification: '非极性, NEAA', role: '与丝氨酸互换；一碳单位来源（GCS）；GSH组分', impact: '参与核酸合成与抗氧化' },
+        His: { name: '组氨酸', classification: '碱性, EAA', role: '生理pH缓冲剂；组胺前体', impact: '维持培养基pH稳定；常用于制剂缓冲液' },
+        Ile: { name: '异亮氨酸', classification: '非极性, EAA', role: 'BCAA；能量来源；mTOR信号', impact: '重要的能量来源；与细胞生长和生产力相关' },
+        Leu: { name: '亮氨酸', classification: '非极性, EAA', role: 'BCAA；mTOR信号通路强激活剂', impact: '强力促进蛋白合成；与IgG产量高度相关' },
+        Lys: { name: '赖氨酸', classification: '碱性, EAA', role: '抗体C端赖氨酸异质性来源', impact: 'CQA；被CpD酶切除导致产品不均一' },
+        Met: { name: '甲硫氨酸', classification: '非极性, EAA', role: 'SAM循环前体；半胱氨酸合成前体', impact: '表观遗传调控；抗氧化；连接一碳代谢' },
+        Phe: { name: '苯丙氨酸', classification: '非极性, EAA', role: '酪氨酸合成前体', impact: '芳香族氨基酸代谢起点' },
+        Pro: { name: '脯氨酸', classification: '非极性, NEAA', role: '化学伴侣；胶原蛋白主要成分', impact: '抗细胞应激；防止蛋白质聚集' },
+        Ser: { name: '丝氨酸', classification: '极性, NEAA', role: '一碳单位主要来源；O-连接糖基化位点', impact: '核酸合成核心；与甘氨酸、半胱氨酸代谢紧密相连' },
+        Thr: { name: '苏氨酸', classification: '极性, EAA', role: 'O-连接糖基化位点', impact: 'CQA；影响蛋白质功能与稳定性' },
+        Trp: { name: '色氨酸', classification: '非极性, EAA', role: 'NAD+从头合成前体；血清素前体', impact: '影响细胞氧化还原状态' },
+        Tyr: { name: '酪氨酸', classification: '极性, NEAA', role: '信号转导；儿茶酚胺前体', impact: '由苯丙氨酸合成；参与细胞信号调控' },
+        Val: { name: '缬氨酸', classification: '非极性, EAA', role: 'BCAA；能量来源；mTOR信号', impact: '重要的能量来源；与细胞生长和生产力相关' }
+      },
+      vitamins: [
+        { name: '硫胺素 (B1)', form: 'TPP', role: '碳水化合物代谢中的脱羧反应' },
+        { name: '核黄素 (B2)', form: 'FMN, FAD', role: '氧化还原反应的电子载体' },
+        { name: '烟酸 (B3)', form: 'NAD+, NADP+', role: '主要的氧化还原电子载体' },
+        { name: '泛酸 (B5)', form: '辅酶A (CoA)', role: '乙酰基和其他酰基的载体' },
+        { name: '吡哆醇 (B6)', form: 'PLP', role: '氨基酸代谢；一碳代谢' },
+        { name: '生物素 (B7)', form: '生物素', role: '羧化反应' },
+        { name: '叶酸 (B9)', form: 'THF', role: '一碳单位的载体' },
+        { name: '钴胺素 (B12)', form: '甲钴胺', role: '甲硫氨酸再生' },
+        { name: '维生素C', form: '抗坏血酸', role: '抗氧化剂；胶原蛋白合成辅因子' }
+      ],
+      minerals: [
+        { name: '铁 (Fe)', role: '电子传递链, 氧气运输, DNA合成', impact: '缺乏抑制生长；过量产生氧化应激' },
+        { name: '锌 (Zn)', role: '基因转录调控, 代谢, DNA/RNA合成', impact: '影响基因表达与增殖' },
+        { name: '铜 (Cu)', role: '线粒体呼吸, 抗氧化', impact: '缺乏导致乳酸积累' },
+        { name: '硒 (Se)', role: '抗氧化防御, 构成硒蛋白', impact: '缺乏削弱抗氧化能力' },
+        { name: '锰 (Mn)', role: '蛋白质糖基化, 抗氧化', impact: '缺乏直接影响糖型' },
+        { name: '无机盐 (Na, K, Ca, Mg, P)', role: '维持渗透压、膜电位和pH平衡', impact: '维持细胞基础生理功能' }
+      ],
+      supplements: [
+        { title: '生长因子 (如胰岛素)', content: '在无血清培养基中最重要的促生长和促存活因子，通过激活PI3K/Akt和Ras/MAPK信号通路发挥作用。', mechanism: '<p class="text-xs font-mono bg-amber-50 p-1 rounded">胰岛素 ➔ PI3K/Akt ➔ 抑制凋亡</p><p class="text-xs font-mono bg-amber-50 p-1 rounded mt-1">胰岛素 ➔ Ras/MAPK ➔ 促进增殖</p>' },
+        { title: '剪切保护剂 (Pluronic® F-68)', content: '一种非离子表面活性剂，在悬浮培养中保护细胞免受搅拌和通气产生的流体剪切力损伤。', mechanism: '<p class="text-xs">通过嵌入细胞膜增强韧性，减少与气泡的有害接触。</p>' }
+      ],
+      influencers: [
+        { title: '能量与代谢废物', points: ['<strong class="text-green-700">葡萄糖:</strong> 能量核心，但过量导致<strong class="text-red-600">乳酸</strong>积累。', '<strong class="text-purple-700">谷氨酰胺:</strong> 氮源和能源，但分解产生有毒<strong class="text-red-600">氨</strong>。'], summary: '核心矛盾：满足能量需求同时控制有毒副产物。' },
+        { title: '蛋白质合成引擎', points: ['<strong class="text-blue-700">亮氨酸:</strong> 关键mTOR激活剂，直接驱动蛋白合成。', '<strong class="text-blue-700">氨基酸平衡:</strong> 减轻细胞负担，提高目标蛋白产量。'], summary: '核心目标：提供充足、平衡的“砖块”和“启动信号”。' },
+        { title: '产品质量调控', points: ['<strong class="text-teal-700">天冬酰胺:</strong> N-糖基化位点，耗尽即严重质量问题。', '<strong class="text-teal-700">锰 (Mn):</strong> 糖基转移酶辅因子，决定糖链完整性。', '<strong class="text-teal-700">赖氨酸:</strong> C端异质性是经典质量挑战。'], summary: '核心挑战：精确调控翻译后修饰，满足质量标准。' }
+      ],
+      conclusions: [
+        { title: '系统生物学与模型驱动设计', content: '利用组学技术和数学模型，实现培养基理性设计。', color: 'purple' },
+        { title: '动态实时控制', content: '在线监测+拉曼光谱，根据细胞状态动态调整补料。', color: 'green' }
+      ]
+    };
 
-            const modal = document.getElementById('modal');
-            const modalBody = document.getElementById('modal-body');
-            const closeModalBtn = document.getElementById('close-modal');
-            const modalBackdrop = document.querySelector('.modal-backdrop');
+    /* ===== 渲染函数 ===== */
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modal-body');
+    const closeModalBtn = document.getElementById('close-modal');
+    const modalBackdrop = document.querySelector('.modal-backdrop');
 
-            function populateGrid(containerId, data, cardGenerator) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                data.forEach(item => {
-                    const card = cardGenerator(item);
-                    container.appendChild(card);
-                });
-            }
-            
-            function populateSection(sectionId, data, cardGenerator) {
-                const container = document.querySelector(`#${sectionId} .grid`);
-                if (!container) return;
-                data.forEach(item => {
-                    const card = cardGenerator(item);
-                    container.appendChild(card);
-                });
-            }
+    function populateGrid(id, data, fn) {
+      const container = document.getElementById(id);
+      data.forEach(item => container.appendChild(fn(item)));
+    }
 
-            // Populate Amino Acids
-            const aaGrid = document.getElementById('amino-acid-grid');
-            Object.entries(dataStore.aminoAcids).forEach(([key, value]) => {
-                const card = document.createElement('div');
-                card.className = 'content-card rounded-lg p-4 text-center cursor-pointer';
-                card.dataset.key = key;
-                let tagColor = 'bg-slate-200 text-slate-700';
-                if (value.classification.includes('EAA')) tagColor = 'bg-blue-100 text-blue-800';
-                if (value.impact.includes('CQA')) tagColor = 'bg-red-100 text-red-800';
-                card.innerHTML = `<h4 class="font-bold text-lg">${value.name}</h4><p class="text-sm text-slate-500">${key}</p><span class="text-xs font-medium px-2 py-0.5 rounded-full mt-2 inline-block ${tagColor}">${value.classification.split(', ')[0]}</span>`;
-                card.addEventListener('click', () => showAminoAcidModal(key));
-                aaGrid.appendChild(card);
-            });
+    function populateSection(sectionId, data, fn) {
+      const container = document.querySelector(`#${sectionId} > .grid`);
+      if (!container) return;
+      data.forEach(item => container.appendChild(fn(item)));
+    }
 
-            // Populate other sections
-            populateSection('vitamins', dataStore.vitamins, vitamin => {
-                const card = document.createElement('div');
-                card.className = 'content-card rounded-xl p-6';
-                card.innerHTML = `<h3 class="text-xl font-semibold mb-2">${vitamin.name}</h3><p class="text-sm text-slate-600 mb-2"><span class="font-semibold">活性形式:</span> ${vitamin.form}</p><p class="text-slate-700">${vitamin.role}</p>`;
-                return card;
-            });
+    /* 氨基酸卡片 */
+    const aaGrid = document.getElementById('amino-acid-grid');
+    Object.entries(dataStore.aminoAcids).forEach(([key, val]) => {
+      const card = document.createElement('div');
+      card.className = 'content-card p-3 text-center cursor-pointer';
+      card.innerHTML = `
+        <div class="font-bold text-lg">${val.name}</div>
+        <div class="text-sm text-slate-500">${key}</div>
+        <span class="text-xs px-1.5 py-0.5 rounded-full mt-1 inline-block ${val.classification.includes('EAA') ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700'}">${val.classification.split(',')[0]}</span>
+      `;
+      card.addEventListener('click', () => {
+        modalBody.innerHTML = `
+          <h2 class="text-2xl font-bold mb-2">${val.name} (${key})</h2>
+          <p class="text-sm text-slate-500 mb-4">${val.classification}</p>
+          <div><strong>关键代谢角色：</strong>${val.role}</div>
+          <div class="mt-2"><strong>对工艺/质量的影响：</strong>${val.impact}</div>
+        `;
+        modal.classList.remove('hidden');
+      });
+      aaGrid.appendChild(card);
+    });
 
-            populateSection('minerals', dataStore.minerals, mineral => {
-                const card = document.createElement('div');
-                card.className = 'content-card rounded-xl p-6';
-                card.innerHTML = `<h3 class="text-xl font-semibold mb-2">${mineral.name}</h3><p class="text-slate-700 mb-3"><span class="font-semibold">主要功能:</span> ${mineral.role}</p><div class="border-t pt-3"><p class="text-sm text-slate-600"><span class="font-semibold">影响:</span> ${mineral.impact}</p></div>`;
-                return card;
-            });
-            
-            populateSection('supplements', dataStore.supplements, item => {
-                const card = document.createElement('div');
-                card.className = 'content-card rounded-xl p-6';
-                card.innerHTML = `<h3 class="text-2xl font-semibold mb-4">${item.title}</h3><p class="mb-4">${item.content}</p><div class="border-t pt-4">${item.mechanism}</div>`;
-                return card;
-            });
+    populateSection('vitamins', dataStore.vitamins, v => {
+      const card = document.createElement('div');
+      card.className = 'content-card p-4';
+      card.innerHTML = `<h3 class="font-semibold">${v.name}</h3><p class="text-sm text-slate-600">活性形式：${v.form}</p><p class="text-sm mt-1">${v.role}</p>`;
+      return card;
+    });
 
-            populateGrid('influencers-grid', dataStore.influencers, item => {
-                 const card = document.createElement('div');
-                card.className = 'content-card rounded-xl p-6';
-                card.innerHTML = `
-                    <h3 class="text-xl font-semibold mb-3">${item.title}</h3>
-                    <ul class="list-disc list-inside space-y-2 text-slate-700">${item.points.map(p => `<li>${p}</li>`).join('')}</ul>
-                    <p class="text-xs mt-4 p-2 bg-amber-50 rounded">${item.summary}</p>
-                `;
-                return card;
-            });
-            
-             populateSection('conclusion', dataStore.conclusions, item => {
-                const card = document.createElement('div');
-                card.className = `content-card rounded-xl p-6 bg-${item.color}-50 border-${item.color}-200`;
-                card.innerHTML = `<h3 class="text-xl font-semibold text-${item.color}-800 mb-3">${item.title}</h3><p class="text-${item.color}-700">${item.content}</p>`;
-                return card;
-            });
+    populateSection('minerals', dataStore.minerals, m => {
+      const card = document.createElement('div');
+      card.className = 'content-card p-4';
+      card.innerHTML = `<h3 class="font-semibold">${m.name}</h3><p class="text-sm mt-1"><strong>功能：</strong>${m.role}</p><p class="text-sm mt-1"><strong>影响：</strong>${m.impact}</p>`;
+      return card;
+    });
 
+    populateSection('supplements', dataStore.supplements, s => {
+      const card = document.createElement('div');
+      card.className = 'content-card p-4';
+      card.innerHTML = `<h3 class="font-semibold mb-2">${s.title}</h3><p class="text-sm mb-2">${s.content}</p><div class="border-t pt-2">${s.mechanism}</div>`;
+      return card;
+    });
 
-            function showAminoAcidModal(key) {
-                const data = dataStore.aminoAcids[key];
-                modalBody.innerHTML = `
-                    <h2 class="text-3xl font-bold mb-2">${data.name} (${key})</h2>
-                    <p class="text-slate-500 mb-6">${data.classification}</p>
-                    <div class="space-y-4">
-                        <div><h3 class="font-semibold text-lg mb-1">关键代谢角色</h3><p class="text-slate-700">${data.role}</p></div>
-                        <div><h3 class="font-semibold text-lg mb-1">对工艺/质量的影响</h3><p class="text-slate-700">${data.impact}</p></div>
-                    </div>
-                `;
-                modal.style.display = 'flex';
-            }
+    populateSection('influencers', dataStore.influencers, i => {
+      const card = document.createElement('div');
+      card.className = 'content-card p-4';
+      card.innerHTML = `
+        <h3 class="font-semibold mb-2">${i.title}</h3>
+        <ul class="list-disc list-inside text-sm mb-2">${i.points.map(p => `<li>${p}</li>`).join('')}</ul>
+        <p class="text-xs bg-amber-50 p-2 rounded">${i.summary}</p>
+      `;
+      return card;
+    });
 
-            function closeModal() {
-                modal.style.display = 'none';
-            }
+    populateSection('conclusion', dataStore.conclusions, c => {
+      const card = document.createElement('div');
+      card.className = `content-card p-4 bg-${c.color}-50 border-${c.color}-200`;
+      card.innerHTML = `<h3 class="font-semibold text-${c.color}-800">${c.title}</h3><p class="text-sm text-${c.color}-700">${c.content}</p>`;
+      return card;
+    });
 
-            closeModalBtn.addEventListener('click', closeModal);
-            modalBackdrop.addEventListener('click', closeModal);
+    /* 弹窗关闭 */
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+    closeModalBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
 
-            // Navigation scroll spy
-            const sections = document.querySelectorAll('section');
-            const navLinks = document.querySelectorAll('.nav-link');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href').substring(1) === entry.target.id) {
-                                link.classList.add('active');
-                            }
-                        });
-                    }
-                });
-            }, { rootMargin: "-30% 0px -70% 0px" });
+    /* 滚动高亮导航 */
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-30% 0px -70% 0px' });
+    sections.forEach(sec => observer.observe(sec));
 
-            sections.forEach(section => observer.observe(section));
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-        });
-    </script>
+    navLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
 </body>
 </html>
