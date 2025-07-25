@@ -29,6 +29,15 @@
         .strategy-title { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.75rem; }
     </style>
 </head>
+<script>
+  document.title = 'CHO培养小站';
+  // 触发微信/QQ 内置浏览器重新读取标题
+  const iframe = document.createElement('iframe');
+// 如站点没有 favicon，可换成任意 1×1 像素的图片
+iframe.src = '/favicon.ico';
+document.body.appendChild(iframe);
+setTimeout(() => document.body.removeChild(iframe), 0);
+</script>
 <body class="text-slate-800">
 
     <div id="app-container" class="flex">
